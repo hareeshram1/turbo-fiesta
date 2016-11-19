@@ -1,48 +1,44 @@
 makeCacheMatrix <- function(x = matrix()) {
-  
-  m <- NULL
-  
-  get <- function() x 
-  
-  set <- function(y){
-    x <<- y
-    m <<- NULL
-  }
-  setMatrixInversion <- function(mi){
-    m <<- mi
-  }
-  getMatrixInversion <- function(){
-    m
-  }
-  
-  list(set = set, get = get, setMatrixInversion = setMatrixInversion, getMatrixInversion = getMatrixInversion)
-  
+        ## @x: a square invertible matrix
+        ## return: a list containing functions to
+        ##              1. set the matrix
+        ##              2. get the matrix
+        ##              3. set the inverse
+        ##              4. get the inverse
+        ##         this list is used as the input to cacheSolve()
+        
+        inv = NULL
+        set = function(y) {
+                # use `<<-` to assign a value to an object in an environment 
+                # different from the current environment. 
+                x <<- y
+                inv <<- NULL
+        }
+        get = function() x
+        setinv = function(inverse) inv <<- inverse 
+        getinv = function() inv
+        list(set=set, get=get, setinv=setinv, getinv=getinv)
 }
 
-
-## caheSolve(): function that resolve if there's an inversion matrix cached by the 
-## makeCacheMatrix() function.
-
 cacheSolve <- function(x, ...) {
-  ## Return a matrix that is the inverse of 'x'
-  
-  m <- x$getMatrixInversion()
-  
-  ## If the inversion matrix is cached then it is returned, otherwise
-  ## a matrix is returned by the makeCacheMatrix() function and then the 
-  ## matrix (data) it is inversed, using the solve() function with the invertible 
-  ## matrix (data) as unique parameter. 
-  if(!is.null(m)){
-    ## Cached inverted matrix is returned.
-    return(m)
-  }
-  
-  data <- x$get()
-  
-  m <- solve(data)
-  
-  x$setMatrixInversion(m)
-  
-  ## Inverted matrix is returned if it's not cached
-  m
+        ## @x: output of makeCacheMatrix()
+        ## return: inverse of the original matrix input to makeCacheMatrix()
+        
+        inv = x$getinv()
+        
+        # if the inverse has already been calculated
+        if (!is.null(inv)){
+                # get it from the cache and skips the computation. 
+                message("getting cached data")
+                return(inv)
+        }
+        
+        # otherwise, calculates the inverse 
+        mat.data = x$get()
+        inv = solve(mat.data, ...)
+        
+        # sets the value of the inverse in the cache via the setinv function.
+        x$setinv(inv)
+        
+        return(inv)
 }
